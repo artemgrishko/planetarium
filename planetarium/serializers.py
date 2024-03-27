@@ -1,7 +1,15 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from planetarium.models import ShowTheme, AstronomyShow, Reservation, PlanetariumDome, ShowSession, Ticket
+from planetarium.models import (
+    ShowTheme,
+    AstronomyShow,
+    Reservation,
+    PlanetariumDome,
+    ShowSession,
+    Ticket
+)
+from user.serializers import UserSerializer
 
 
 class ShowThemeSerializer(serializers.ModelSerializer):
@@ -17,10 +25,12 @@ class AstronomyShowSerializer(serializers.ModelSerializer):
         model = AstronomyShow
         fields = ("id", "title", "description", "show_theme",)
 
+
 class AstronomyShowListSerializer(AstronomyShowSerializer):
     class Meta:
         model = AstronomyShow
         fields = ("id", "title", "description", "show_theme", "image")
+
 
 class AstronomyShowImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,13 +55,15 @@ class AstronomyShowDetailSerializer(AstronomyShowSerializer):
 #         model = AstronomyShow
 #         fields = ("id", "title", "description", "show_theme")
 #
-
-
 class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ("id", "created_at")
+        fields = ("id", "created_at", "user")
+
+
+class ReservationDetailSerializer(ReservationSerializer):
+    user = UserSerializer(read_only=True)
 
 
 class PlanetariumDomeSerializer(serializers.ModelSerializer):
