@@ -6,7 +6,7 @@ from .views import (
     AstronomyShowViewSet,
     PlanetariumDomeViewSet,
     ShowSessionViewSet,
-    TicketViewSet
+    TicketViewSet, ReservationViewSet
 )
 
 router = routers.DefaultRouter()
@@ -16,6 +16,7 @@ router.register("astronomy_shows", AstronomyShowViewSet)
 router.register("planetarium_domes", PlanetariumDomeViewSet)
 router.register("show_sessions", ShowSessionViewSet)
 router.register("tickets", TicketViewSet)
+router.register("reservations", ReservationViewSet)
 
 urlpatterns = [path("", include(router.urls))]
 

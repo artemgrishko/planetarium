@@ -1,9 +1,10 @@
 from rest_framework import mixins, viewsets
 from rest_framework.viewsets import GenericViewSet
 
-from planetarium.models import ShowTheme, AstronomyShow, PlanetariumDome, ShowSession, Ticket
+from planetarium.models import ShowTheme, AstronomyShow, PlanetariumDome, ShowSession, Ticket, Reservation
 from planetarium.serializers import ShowThemeSerializer, AstronomyShowSerializer, PlanetariumDomeSerializer, \
-    ShowSessionSerializer, TicketSerializer, AstronomyShowDetailSerializer, ShowSessionDetailSerializer
+    ShowSessionSerializer, TicketSerializer, AstronomyShowDetailSerializer, ShowSessionDetailSerializer, \
+    ReservationSerializer, TicketDetailSerializer
 
 
 class ShowThemeViewSet(viewsets.ModelViewSet):
@@ -40,5 +41,12 @@ class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return TicketDetailSerializer
+        return self.serializer_class
 
 
+class ReservationViewSet(viewsets.ModelViewSet):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer
