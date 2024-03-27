@@ -15,11 +15,36 @@ class AstronomyShowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AstronomyShow
-        fields = ("id", "title", "description", "show_theme")
+        fields = ("id", "title", "description", "show_theme",)
+
+class AstronomyShowListSerializer(AstronomyShowSerializer):
+    class Meta:
+        model = AstronomyShow
+        fields = ("id", "title", "description", "show_theme", "image")
+
+class AstronomyShowImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AstronomyShow
+        fields = ("id", "image")
 
 
 class AstronomyShowDetailSerializer(AstronomyShowSerializer):
     show_theme = ShowThemeSerializer(many=True, read_only=True)
+    image = AstronomyShowImageSerializer(read_only=True)
+
+    class Meta:
+        model = AstronomyShow
+        fields = ("id", "title", "description", "show_theme", "image")
+
+
+
+
+# class AstronomyShowListSerializer(AstronomyShowSerializer):
+#     show_ids = serializers.
+#     class Meta:
+#         model = AstronomyShow
+#         fields = ("id", "title", "description", "show_theme")
+#
 
 
 class ReservationSerializer(serializers.ModelSerializer):
@@ -48,6 +73,11 @@ class ShowSessionDetailSerializer(ShowSessionSerializer):
     planetarium_dome = PlanetariumDomeSerializer()
 
 
+class ShowSessionListSerializer(ShowSessionSerializer):
+    planetarium_dome = PlanetariumDomeSerializer()
+    astronomy_show = AstronomyShowDetailSerializer()
+
+
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs=attrs)
@@ -65,6 +95,9 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketDetailSerializer(TicketSerializer):
-    show_session = ShowSessionDetailSerializer()
-    reservation = ReservationSerializer()
+    show_session = ShowSessionDetailSerializer(many=False, read_only=True)
+    reservation = ReservationSerializer(many=False, read_only=True)
 
+
+class TicketListSerializer(TicketSerializer):
+    show_session = ShowSessionListSerializer(many=False, read_only=True)
