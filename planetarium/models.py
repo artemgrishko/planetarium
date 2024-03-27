@@ -24,7 +24,11 @@ def movie_image_file_path(instance, filename):
 class AstronomyShow(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    show_theme = models.ManyToManyField(ShowTheme, related_name="astronomy_shows")
+    show_theme = models.ManyToManyField(
+        ShowTheme,
+        related_name="astronomy_shows",
+        blank=True,
+    )
     image = models.ImageField(null=True, upload_to=movie_image_file_path)
 
     def __str__(self):

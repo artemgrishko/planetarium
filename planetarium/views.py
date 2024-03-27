@@ -46,7 +46,6 @@ class ShowThemeViewSet(viewsets.ModelViewSet):
 class AstronomyShowViewSet(viewsets.ModelViewSet):
     queryset = AstronomyShow.objects.all()
     serializer_class = AstronomyShowSerializer
-    pagination_class = OrderPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
