@@ -18,6 +18,7 @@ class AstronomyShowViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "retrieve":
             return AstronomyShowDetailSerializer
+        return self.serializer_class
 
 
 class PlanetariumDomeViewSet(viewsets.ModelViewSet):
