@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -77,6 +78,20 @@ class AstronomyShowViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(show_theme__id__in=show_theme_ids)
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "show_theme",
+                type={"type": "array", "items": {"type": "number"}},
+                description="Filter by show themes id",
+            ),
+            OpenApiParameter("title", type=str, description="Filter by title"),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of show astronomy shows"""
+        return super().list(request, *args, **kwargs)
 
 
 class PlanetariumDomeViewSet(viewsets.ModelViewSet):
