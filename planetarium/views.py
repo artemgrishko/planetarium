@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.db.models import F, Count
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -27,7 +28,7 @@ from planetarium.serializers import (
     TicketDetailSerializer,
     TicketListSerializer,
     AstronomyShowListSerializer,
-    ReservationDetailSerializer
+    ReservationDetailSerializer, ShowSessionListSerializer, AstronomyShowImageSerializer
 )
 
 
@@ -63,7 +64,7 @@ class AstronomyShowViewSet(viewsets.ModelViewSet):
     def upload_image(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
         astronomy_show = self.get_object()
-        serializer = self.get_serializer(astronomy_show, data=request.data)
+        serializer = AstronomyShowImageSerializer(astronomy_show, data=request.data)
 
         if serializer.is_valid():
             serializer.save()
@@ -114,11 +115,15 @@ class PlanetariumDomeViewSet(viewsets.ModelViewSet):
 
 
 class ShowSessionViewSet(viewsets.ModelViewSet):
-    queryset = ShowSession.objects.all()
+    queryset = ShowSession.objects.all().annotate(
+        tickets_available=(
+            F("planetarium_dome__rows")) * F("planetarium_dome__seats_in_row") - Count("tickets"))
     serializer_class = ShowSessionSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
+        if self.action == "list":
+            return ShowSessionListSerializer
         if self.action == "retrieve":
             return ShowSessionDetailSerializer
         return self.serializer_class

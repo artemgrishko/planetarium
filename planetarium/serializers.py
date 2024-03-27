@@ -27,9 +27,14 @@ class AstronomyShowSerializer(serializers.ModelSerializer):
 
 
 class AstronomyShowListSerializer(AstronomyShowSerializer):
+    show_theme = serializers.SerializerMethodField()
+
     class Meta:
         model = AstronomyShow
         fields = ("id", "title", "description", "show_theme", "image")
+
+    def get_show_theme(self, obj):
+        return [theme.name for theme in obj.show_theme.all()]
 
 
 class AstronomyShowImageSerializer(serializers.ModelSerializer):
@@ -47,19 +52,11 @@ class AstronomyShowDetailSerializer(AstronomyShowSerializer):
         fields = ("id", "title", "description", "show_theme", "image")
 
 
-
-
-# class AstronomyShowListSerializer(AstronomyShowSerializer):
-#     show_ids = serializers.
-#     class Meta:
-#         model = AstronomyShow
-#         fields = ("id", "title", "description", "show_theme")
-#
 class ReservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reservation
-        fields = ("id", "created_at", "user")
+        fields = ("id", "created_at",)
 
 
 class ReservationDetailSerializer(ReservationSerializer):
@@ -86,8 +83,22 @@ class ShowSessionDetailSerializer(ShowSessionSerializer):
 
 
 class ShowSessionListSerializer(ShowSessionSerializer):
-    planetarium_dome = PlanetariumDomeSerializer()
-    astronomy_show = AstronomyShowDetailSerializer()
+    # planetarium_dome = PlanetariumDomeSerializer()
+    astronomy_show = AstronomyShowListSerializer()
+    tickets_available = serializers.IntegerField(read_only=True)
+    planetarium_dome_name = serializers.CharField(read_only=True, source="planetarium_dome.name")
+    planetarium_dome_capacity = serializers.IntegerField(read_only=True, source="planetarium_dome.capacity")
+
+    class Meta:
+        model = ShowSession
+        fields = (
+            "id",
+            "astronomy_show",
+            "planetarium_dome_name",
+            "planetarium_dome_capacity",
+            "show_time",
+            "tickets_available",
+        )
 
 
 class TicketSerializer(serializers.ModelSerializer):
