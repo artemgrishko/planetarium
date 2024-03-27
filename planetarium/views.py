@@ -1,12 +1,28 @@
-from rest_framework import mixins, viewsets, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
 
-from planetarium.models import ShowTheme, AstronomyShow, PlanetariumDome, ShowSession, Ticket, Reservation
-from planetarium.serializers import ShowThemeSerializer, AstronomyShowSerializer, PlanetariumDomeSerializer, \
-    ShowSessionSerializer, TicketSerializer, AstronomyShowDetailSerializer, ShowSessionDetailSerializer, \
-    ReservationSerializer, TicketDetailSerializer, TicketListSerializer, AstronomyShowListSerializer
+from planetarium.models import (
+    ShowTheme,
+    AstronomyShow,
+    PlanetariumDome,
+    ShowSession,
+    Ticket,
+    Reservation
+)
+from planetarium.serializers import (
+    ShowThemeSerializer,
+    AstronomyShowSerializer,
+    PlanetariumDomeSerializer,
+    ShowSessionSerializer,
+    TicketSerializer,
+    AstronomyShowDetailSerializer,
+    ShowSessionDetailSerializer,
+    ReservationSerializer,
+    TicketDetailSerializer,
+    TicketListSerializer,
+    AstronomyShowListSerializer
+)
 
 
 class ShowThemeViewSet(viewsets.ModelViewSet):
@@ -40,6 +56,27 @@ class AstronomyShowViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def _params_to_ints(qs):
+        """Converts a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in qs.split(",")]
+
+    def get_queryset(self):
+        """Retrieve the movies with filters"""
+        title = self.request.query_params.get("title")
+        show_theme = self.request.query_params.get("show_theme")
+
+        queryset = self.queryset
+
+        if title:
+            queryset = queryset.filter(title__icontains=title)
+
+        if show_theme:
+            show_theme_ids = self._params_to_ints(show_theme)
+            queryset = queryset.filter(show_theme__id__in=show_theme_ids)
+
+        return queryset.distinct()
 
 
 class PlanetariumDomeViewSet(viewsets.ModelViewSet):
