@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -107,6 +109,39 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return ShowSessionDetailSerializer
         return self.serializer_class
+
+    def get_queryset(self):
+        show_time = self.request.query_params.get("show_time")
+        astronomy_show = self.request.query_params.get("astronomy_show")
+
+        queryset = self.queryset
+
+        if show_time:
+            time = datetime.strptime(datetime.date, "%Y-%m-%d").date()
+            queryset = queryset.filter(show_time=time)
+
+        if astronomy_show:
+            queryset = queryset.filter(astronomy_show_id=int(astronomy_show))
+
+        return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "show_time",
+                type=str,
+                description="Filter by show_time",
+            ),
+            OpenApiParameter(
+                "astronomy_show",
+                type=int,
+                description="Filter by astronomy_show id",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of show sessions"""
+        return super().list(request, *args, **kwargs)
 
 
 class TicketViewSet(viewsets.ModelViewSet):
