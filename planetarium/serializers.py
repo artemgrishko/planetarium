@@ -18,7 +18,7 @@ class AstronomyShowSerializer(serializers.ModelSerializer):
 
 
 class AstronomyShowDetailSerializer(AstronomyShowSerializer):
-    show_theme = ShowThemeSerializer()
+    show_theme = ShowThemeSerializer(many=True, read_only=True)
 
 
 class ReservationSerializer(serializers.ModelSerializer):
