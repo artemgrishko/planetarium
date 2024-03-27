@@ -3,7 +3,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from planetarium.models import ShowTheme, AstronomyShow, PlanetariumDome, ShowSession, Ticket
 from planetarium.serializers import ShowThemeSerializer, AstronomyShowSerializer, PlanetariumDomeSerializer, \
-    ShowSessionSerializer, TicketSerializer, AstronomyShowDetailSerializer
+    ShowSessionSerializer, TicketSerializer, AstronomyShowDetailSerializer, ShowSessionDetailSerializer
 
 
 class ShowThemeViewSet(viewsets.ModelViewSet):
@@ -29,6 +29,11 @@ class PlanetariumDomeViewSet(viewsets.ModelViewSet):
 class ShowSessionViewSet(viewsets.ModelViewSet):
     queryset = ShowSession.objects.all()
     serializer_class = ShowSessionSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ShowSessionDetailSerializer
+        return self.serializer_class
 
 
 class TicketViewSet(viewsets.ModelViewSet):
