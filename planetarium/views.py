@@ -2,10 +2,11 @@ from datetime import datetime
 
 from django.db.models import F, Count
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from planetarium.models import (
     ShowTheme,
@@ -15,7 +16,9 @@ from planetarium.models import (
     Ticket,
     Reservation
 )
+
 from planetarium.permissions import IsAdminOrIfAuthenticatedReadOnly
+
 from planetarium.serializers import (
     ShowThemeSerializer,
     AstronomyShowSerializer,
@@ -28,9 +31,9 @@ from planetarium.serializers import (
     TicketDetailSerializer,
     TicketListSerializer,
     AstronomyShowListSerializer,
-    ReservationDetailSerializer,
     ShowSessionListSerializer,
     AstronomyShowImageSerializer,
+    ReservationListSerializer,
 )
 
 
@@ -46,7 +49,7 @@ class ShowThemeViewSet(viewsets.ModelViewSet):
 
 
 class AstronomyShowViewSet(viewsets.ModelViewSet):
-    queryset = AstronomyShow.objects.all()
+    queryset = AstronomyShow.objects.prefetch_related("show_theme")
     serializer_class = AstronomyShowSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -116,9 +119,11 @@ class PlanetariumDomeViewSet(viewsets.ModelViewSet):
 
 
 class ShowSessionViewSet(viewsets.ModelViewSet):
-    queryset = ShowSession.objects.all().annotate(
+    queryset = (ShowSession.objects.all()
+    .select_related("astronomy_show", "planetarium_dome")
+    .annotate(
         tickets_available=(
-            F("planetarium_dome__rows")) * F("planetarium_dome__seats_in_row") - Count("tickets"))
+            F("planetarium_dome__rows")) * F("planetarium_dome__seats_in_row") - Count("tickets")))
     serializer_class = ShowSessionSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -164,7 +169,11 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
 
 
 class TicketViewSet(viewsets.ModelViewSet):
-    queryset = Ticket.objects.all()
+    queryset = Ticket.objects.all().prefetch_related(
+        "show_session__astronomy_show",
+        "show_session__planetarium_dome",
+        "reservation",
+    )
     serializer_class = TicketSerializer
     pagination_class = OrderPagination
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -177,14 +186,27 @@ class TicketViewSet(viewsets.ModelViewSet):
         return self.serializer_class
 
 
-class ReservationViewSet(viewsets.ModelViewSet):
-    queryset = Reservation.objects.all()
+class ReservationPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
+
+
+class ReservationViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    GenericViewSet
+):
+    queryset = Reservation.objects.all().prefetch_related(
+        "tickets__show_session__astronomy_show",
+        "tickets__show_session__planetarium_dome",
+    )
     serializer_class = ReservationSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    pagination_class = ReservationPagination
 
     def get_serializer_class(self):
-        if self.action == "retrieve":
-            return ReservationDetailSerializer
+        if self.action == "list":
+            return ReservationListSerializer
         return self.serializer_class
 
     def get_queryset(self):
