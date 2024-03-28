@@ -5,7 +5,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
 from planetarium.models import AstronomyShow, ShowTheme
-from planetarium.serializers import AstronomyShowListSerializer, AstronomyShowDetailSerializer
+from planetarium.serializers import AstronomyShowListSerializer
 
 AstronomyShow_URL = reverse("planetarium:astronomyshow-list")
 
@@ -20,11 +20,7 @@ def sample_show(**params):
     return AstronomyShow.objects.create(**default)
 
 
-def detail_url(show_id):
-    return reverse("planetarium:astronomyshow-list", args=(show_id,))
-
-
-class UnauthenticatedShowThemeViewTest(TestCase):
+class UnauthenticatedShowViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
 
@@ -54,20 +50,21 @@ class AuthenticatedAstronomyShowTest(TestCase):
         self.assertEqual(res.data, serializer.data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
-    # def test_filter_movies_by_title(self):
-    #     movie_with_title1 = sample_show()
-    #     movie_with_title2 = sample_show(title="Test2")
-    #
-    #     res = self.client.get(
-    #         AstronomyShow_URL,
-    #         {"title": movie_with_title1.title}
-    #     )
-    #
-    #     serializer_with_show_title1 = AstronomyShowListSerializer(movie_with_title1)
-    #     serializer_with_show_title2 = AstronomyShowListSerializer(movie_with_title2)
-    #
-    #     self.assertIn(serializer_with_show_title1.data, res.data)
-    #     self.assertNotIn(serializer_with_show_title2.data, res.data)
+    def test_filter_shows_by_title(self):
+        show_with_title1 = sample_show()
+        show_with_title2 = sample_show(title="Moon")
+
+        res = self.client.get(
+            AstronomyShow_URL,
+            {"title": show_with_title1}
+        )
+
+        serializer_with_show_title1 = AstronomyShowListSerializer(show_with_title1)
+        serializer_with_show_title2 = AstronomyShowListSerializer(show_with_title2)
+
+        self.assertIn(serializer_with_show_title1.data, res.data)
+        self.assertNotIn(serializer_with_show_title2.data, res.data)
+
     def test_filter_shows_by_show_theme_ids(self):
         show_with_show_theme = sample_show()
         show_without_show_theme = sample_show(title="Test2")
@@ -87,21 +84,6 @@ class AuthenticatedAstronomyShowTest(TestCase):
         self.assertIn(serializer_with_show_theme.data, res.data)
         self.assertNotIn(serializer_without_show_theme.data, res.data)
 
-    # def test_retrieve_show_detail(self):
-    #     show = sample_show()
-    #     show_theme = ShowTheme.objects.create(name="First")
-    #
-    #     show.show_theme.add(show_theme)
-    #
-    #     url = detail_url(show.id)
-    #
-    #     res = self.client.get(url)
-    #
-    #     serializer = AstronomyShowDetailSerializer(show)
-    #
-    #     self.assertEqual(res.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(res.data, serializer.data)
-
     def test_create_forbidden(self):
         payload = {
             "title": "TEST",
@@ -113,7 +95,7 @@ class AuthenticatedAstronomyShowTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
 
-class AdminMovieViewTest(TestCase):
+class AdminAstronomyShowViewTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(

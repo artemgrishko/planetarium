@@ -1,28 +1,23 @@
-from datetime import datetime
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from planetarium.models import AstronomyShow, PlanetariumDome, ShowSession
-from planetarium.serializers import ShowSessionListSerializer
 
-SHOW_SESSION_URL = reverse("planetarium:showsession-list")
+DOME_URL = reverse("planetarium:planetariumdome-list")
 
 
-class UnauthenticatedShowSessionView(TestCase):
+class UnauthenticatedPlanetariumDomeView(TestCase):
     def setUp(self):
         self.client = APIClient()
 
     def test_auth_required(self):
-        res = self.client.get(SHOW_SESSION_URL)
+        res = self.client.get(DOME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
-
-class AuthenticatedShowSessionTest(TestCase):
+class AuthenticatedPlanetariumDomeTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
@@ -31,7 +26,7 @@ class AuthenticatedShowSessionTest(TestCase):
         )
         self.client.force_authenticate(self.user)
 
-    def test_show_session_list_access(self):
-        res = self.client.get(SHOW_SESSION_URL)
+    def test_planetarium_dome_list_access(self):
+        res = self.client.get(DOME_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)

@@ -18,7 +18,7 @@ class UnauthenticatedReservationView(TestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-class AuthenticatedShoveThemeTest(TestCase):
+class AuthenticatedReservationTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
@@ -27,7 +27,7 @@ class AuthenticatedShoveThemeTest(TestCase):
         )
         self.client.force_authenticate(self.user)
 
-    def test_show_theme_list_access(self):
+    def test_reservation_list_access(self):
         res = self.client.get(RESERVATION_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
