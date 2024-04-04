@@ -129,5 +129,10 @@ class Ticket(models.Model):
                 f"(row: {self.row}, seat: {self.seat})")
 
     class Meta:
-        unique_together = ("show_session", "row", "seat")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["show_session", "row", "seat"],
+                name="unique_ticket"
+            )
+        ]
         ordering = ["row", "seat"]
