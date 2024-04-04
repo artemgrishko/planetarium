@@ -1,0 +1,11 @@
+from rest_framework.pagination import PageNumberPagination
+
+
+class OrderPagination(PageNumberPagination):
+    page_size = 5
+    max_page_size = 50
+
+
+class ReservationPagination(PageNumberPagination):
+    page_size = 10
+    max_page_size = 100
